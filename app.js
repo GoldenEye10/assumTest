@@ -1,8 +1,9 @@
-require('dotenv').config();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
 const app = express();
+require('dotenv').config();
 
 const PORT = process.env.APP_PORT;
 
@@ -10,7 +11,7 @@ const PORT = process.env.APP_PORT;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-/**
+
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -22,7 +23,17 @@ const pool = new Pool({
     }
 });
 
- */
+// Test database connection
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('Error connecting to the database:', err.stack);
+    } else {
+        console.log('Connected to the database');
+    }
+    release();
+});
+
+
 
 // Object to store webhook data
 let latestWebhookData = {};
@@ -1383,6 +1394,22 @@ app.get('/latest', (req, res) => {
     `);
 });
 
+app.get("/login", (req, res) => {
+    return res.status(200).json({
+        msg: "Login page",
+    });
+});
+
+app.get('/env-test', (req, res) => {
+    res.json({
+        DB_USER: process.env.DB_USER,
+        DB_HOST: process.env.DB_HOST,
+        DB_DATABASE: process.env.DB_DATABASE,
+        APP_PORT: process.env.APP_PORT,
+    });
+});
+
+
 // Error handling for unhandled routes
 app.use((req, res) => {
     console.log(`Unhandled request: ${req.method} ${req.originalUrl}`);
@@ -1390,7 +1417,6 @@ app.use((req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-
+app.listen(PORT || 3004, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
